@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ice Cloud</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <style>
+        .gradient-text {
+            background: linear-gradient(45deg, #8acbff, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .telegram-link a {
+            background: linear-gradient(45deg, #8acbff, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #000000;  /* Черный фон */
+            color: var(--tg-theme-text-color, #ffffff); /* Белый текст */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .api-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.7rem;
+            color: var(--tg-theme-hint-color, #888888);
+            opacity: 0.7;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--tg-theme-text-color, #ffffff); /* Белый текст */
+        }
+
+        .upload-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .upload-area p {
+            background: linear-gradient(to right, #8acbff, #ffffff);
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 10px;
+            color: transparent;
+            -webkit-background-clip: text;
+            text-align: center;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+            border: 2px dashed #8acbff;
+            padding-left: 30px;
+            padding-right: 30px;
+        }
+
+        .upload-area p:hover {
+            opacity: 0.9;
+            border-color: #ffffff;
+        }
+
+        #file-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        button {
+            background: linear-gradient(to right, #8acbff, #ffffff);
+            border: none;
+            color: transparent;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 15px 30px;
+            border-radius: 10px;
+            width: 100%;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+            -webkit-background-clip: text;
+            text-align: center;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #1a1a1a; /* Темный фон */
+            color: #ffffff; /* Белый текст */
+            word-break: break-word;
+            text-align: left;
+            display: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .link {
+            color: var(--tg-theme-link-color, #007aff);
+            text-decoration: none;
+        }
+
+        .status {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--tg-theme-hint-color, #888888);
+        }
+
+        .file-info {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--tg-theme-text-color, #ffffff); /* Белый текст */
+        }
+
+        .error {
+            color: #ff3b30;
+        }
+
+        .credits {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            background: linear-gradient(to right, #8acbff, #ffffff);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .ice-hidden {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-image: url('ice.png');
+            background-size: cover;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .upload-area {
+                padding: 20px;
+            }
+
+            button {
+                padding: 12px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="api-info"></div>
+
+    <div class="container">
+        <h1 class="gradient-text">Ice Cloud</h1>
+        <h1 class="gradient-text">Fast file upload and sharing</h1>
+        <div class="upload-wrapper">
+            <div class="upload-area">
+                <p>Click or drag a file here</p>
+                <input type="file" id="file-input">
+            </div>
+        </div>
+        <div class="file-info" id="file-info"></div>
+        <button id="upload-button" onclick="uploadFile()" disabled>Upload</button>
+        <div class="status" id="status"></div>
+        <div id="result"></div>
+    </div>
+    <div class="credits">API kappa.lol</div>
+
+    <div class="ice-hidden" id="iceHidden" style="background-image: url('ice.png');"></div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+
+        document.body.style.backgroundColor = tg.themeParams.bg_color || '#000000';  // Черный фон
+        document.body.style.color = tg.themeParams.text_color || '#ffffff';  // Белый текст
+
+        const fileInput = document.getElementById('file-input');
+        const uploadButton = document.getElementById('upload-button');
+        const statusElement = document.getElementById('status');
+        const resultElement = document.getElementById('result');
+        const fileInfoElement = document.getElementById('file-info');
+
+        const uploadArea = document.querySelector('.upload-area');
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--tg-theme-button-color, #007aff)';
+                uploadArea.style.backgroundColor = 'var(--tg-theme-secondary-bg-color, #f0f0f0)';
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--tg-theme-hint-color, #999999)';
+                uploadArea.style.backgroundColor = 'transparent';
+            });
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileInput.files = e.dataTransfer.files;
+            handleFileSelection();
+        });
+
+        fileInput.addEventListener('change', handleFileSelection);
+
+        function handleFileSelection() {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const maxSize = 100 * 1024 * 1024;
+
+                if (file.size > maxSize) {
+                    fileInfoElement.innerHTML = `<span class="error">File is too large (${formatFileSize(file.size)})</span>`;
+                    uploadButton.disabled = true;
+                    statusElement.innerHTML = '<span class="error">Maximum file size: 100 MB</span>';
+                    return;
+                }
+
+                fileInfoElement.textContent = `Selected file: ${file.name} (${formatFileSize(file.size)})`;
+                fileInfoElement.className = 'file-info';
+                uploadButton.disabled = false;
+                statusElement.textContent = 'Click "Upload" to send the file';
+                statusElement.className = 'status';
+            } else {
+                fileInfoElement.textContent = '';
+                uploadButton.disabled = true;
+                statusElement.textContent = 'Select a file to upload (max. 100 MB)';
+                statusElement.className = 'status';
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function uploadFile() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            uploadButton.disabled = true;
+            statusElement.textContent = 'Uploading...';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('https://kappa.lol/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                resultElement.innerHTML = `
+                    <p><strong>File uploaded successfully!</strong></p>
+                    <p>Link: <a href="${data.link}" class="link" target="_blank">${data.link}</a></p>
+                    <p>Delete link: <a href="${data.delete}" class="link" target="_blank">${data.delete}</a></p>
+                `;
+                resultElement.style.display = 'block';
+                statusElement.textContent = 'Upload complete';
+            } catch (error) {
+                statusElement.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            } finally {
+                uploadButton.disabled = false;
+            }
+        }
+
+        tg.ready();
+
+        const iceHidden = document.getElementById('iceHidden');
+        const iceSound = new Audio('sound.mp3');
+
+        iceHidden.addEventListener('click', () => {
+            iceSound.play();
+        });
+    </script>
+</body>
+</html>
